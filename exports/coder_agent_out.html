@@ -1,0 +1,176 @@
+ <style>
+    #agent-output {font-family: "Segoe UI", sans-serif; color: #333; }
+
+    #agent-output table {width: 100%; border-collapse: collapse; margin-top: 1rem;}
+    #agent-output th, 
+    #agent-output td {border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; border-left: none; border-right: none; padding: 10px; text-align: left;}
+    #agent-output tr:nth-child(even) {background-color: #f9f9f9;}
+    #agent-output tr:hover {background-color: #e6f7ff;  }
+    #agent-output th {background-color: #111; color: white;}
+
+    #agent-output h1, 
+    #agent-output h2,
+    #agent-output h3 { border-bottom: 2px solid #ddd; padding-bottom: 6px; margin-top: 1.5rem; color: #111; }
+    #agent-output ul { padding-left: 1.5rem; margin-bottom: 1rem; list-style-type: disc;}
+    #agent-output ul li { margin-bottom: 8px;  padding-left: 0.5rem; border-left: 3px;  background-color: #f7faff; border-radius: 4px; transition: background-color 0.3s ease; }
+    #agent-output ul li:hover { background-color: #e6f2ff;}
+    #agent-output ol {padding-left: 1.5rem; margin-bottom: 1rem; list-style-type: decimal; counter-reset: item;}
+    #agent-output ol li {margin-bottom: 8px; padding-left: 0.5rem; position: relative; background-color: #fffdf7; border-left: 3px; border-radius: 4px; transition: background-color 0.3s ease;}
+    #agent-output ol li:hover { background-color: #fff3e0; }
+    #agent-output p { font-size: 1rem;  line-height: 1.7; margin-bottom: 1.2rem; padding: 0.5rem 0.75rem;  border-left: 4px;}
+    #agent-output pre { background-color: #f4f4f4; padding: 10px; border-radius: 6px; overflow-x: auto; }
+    </style> 
+<div id="agent-output"><h1>Coder [AI agent] generated content:</h1>
+<h2>Conversational HR Metrics Chatbot - Backend Code</h2>
+<p>This document details the backend implementation of the core business logic for the conversational HR metrics chatbot.  We'll focus on Python with Flask for the REST API and utilize pytest for unit testing.  Redis is used for caching.</p>
+<p><strong>1. Actual Code Implementation (Python)</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">redis</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyodbc</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">flask</span><span class="w"> </span><span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">jsonify</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="c1"># Assume AWS Bedrock integration is handled by a separate module (not shown for brevity)</span>
+<span class="c1">#  This module would handle NLU and return a SQL query.  Replace with your actual AWS Bedrock integration.</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">aws_bedrock_integration</span><span class="w"> </span><span class="kn">import</span> <span class="n">process_natural_language</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;REDIS_URL&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;REDIS_URL&#39;</span><span class="p">,</span> <span class="s1">&#39;redis://localhost:6379&#39;</span><span class="p">)</span>
+<span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;SQL_SERVER_CONNECTION_STRING&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;SQL_SERVER_CONNECTION_STRING&#39;</span><span class="p">)</span>
+
+
+<span class="c1"># Initialize Redis connection</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">redis</span><span class="o">.</span><span class="n">from_url</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;REDIS_URL&#39;</span><span class="p">])</span>
+
+<span class="c1"># Database connection (replace with your actual connection string)</span>
+
+<span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/query&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;POST&#39;</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">query_hr_data</span><span class="p">():</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">user_query</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">json</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;query&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">user_query</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Missing query parameter&#39;</span><span class="p">}),</span> <span class="mi">400</span>
+
+        <span class="c1"># Check cache for prompt/semantic caching</span>
+        <span class="n">cached_result</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">user_query</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cached_result</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;result&#39;</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">cached_result</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))}),</span> <span class="mi">200</span>
+
+        <span class="c1"># Use AWS Bedrock to translate natural language to SQL</span>
+        <span class="n">sql_query</span> <span class="o">=</span> <span class="n">process_natural_language</span><span class="p">(</span><span class="n">user_query</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sql_query</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Invalid query&#39;</span><span class="p">}),</span> <span class="mi">400</span>
+
+        <span class="c1"># Execute SQL query</span>
+        <span class="n">conn</span> <span class="o">=</span> <span class="n">pyodbc</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;SQL_SERVER_CONNECTION_STRING&#39;</span><span class="p">])</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql_query</span><span class="p">)</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+
+        <span class="c1"># Format results for JSON response (example)</span>
+        <span class="n">formatted_results</span> <span class="o">=</span> <span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">([</span><span class="n">column</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">description</span><span class="p">],</span> <span class="n">row</span><span class="p">))</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">results</span><span class="p">]</span>
+
+        <span class="c1"># Cache results</span>
+        <span class="n">r</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">user_query</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">formatted_results</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;result&#39;</span><span class="p">:</span> <span class="n">formatted_results</span><span class="p">}),</span> <span class="mi">200</span>
+
+    <span class="k">except</span> <span class="n">pyodbc</span><span class="o">.</span><span class="n">Error</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+        <span class="n">sqlstate</span> <span class="o">=</span> <span class="n">ex</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">sqlstate</span> <span class="o">==</span> <span class="s2">&quot;28000&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="s1">&#39;Authentication failed&#39;</span><span class="p">}),</span> <span class="mi">401</span>  <span class="c1">#Handle specific error codes</span>
+        <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Database error: </span><span class="si">{</span><span class="n">ex</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">}),</span> <span class="mi">500</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">jsonify</span><span class="p">({</span><span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;An error occurred: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">}),</span> <span class="mi">500</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">conn</span><span class="p">:</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+
+<span class="c1">#Testing</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pytest</span>
+
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">fixture</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">client</span><span class="p">():</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;TESTING&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">with</span> <span class="n">app</span><span class="o">.</span><span class="n">test_client</span><span class="p">()</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">client</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_successful_query</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">monkeypatch</span><span class="p">):</span>
+    <span class="c1"># Mock AWS Bedrock and database interaction for testing</span>
+    <span class="n">mock_sql_query</span> <span class="o">=</span> <span class="s2">&quot;SELECT * FROM HRMetrics WHERE Department = &#39;Sales&#39;&quot;</span>
+    <span class="n">mock_results</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;EmployeeID&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Department&quot;</span><span class="p">:</span> <span class="s2">&quot;Sales&quot;</span><span class="p">,</span> <span class="s2">&quot;Salary&quot;</span><span class="p">:</span> <span class="mi">60000</span><span class="p">},</span> <span class="p">{</span><span class="s2">&quot;EmployeeID&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;Department&quot;</span><span class="p">:</span> <span class="s2">&quot;Sales&quot;</span><span class="p">,</span> <span class="s2">&quot;Salary&quot;</span><span class="p">:</span> <span class="mi">70000</span><span class="p">}]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">mock_process_natural_language</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">mock_sql_query</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">mock_db_execute</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">mock_results</span>
+
+    <span class="n">monkeypatch</span><span class="o">.</span><span class="n">setattr</span><span class="p">(</span><span class="s2">&quot;aws_bedrock_integration.process_natural_language&quot;</span><span class="p">,</span> <span class="n">mock_process_natural_language</span><span class="p">)</span>
+    <span class="n">monkeypatch</span><span class="o">.</span><span class="n">setattr</span><span class="p">(</span><span class="s2">&quot;pyodbc.connect&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">type</span><span class="p">(</span><span class="s1">&#39;MockConnection&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nb">object</span><span class="p">,),</span> <span class="p">{</span><span class="s1">&#39;cursor&#39;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="nb">type</span><span class="p">(</span><span class="s1">&#39;MockCursor&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nb">object</span><span class="p">,),</span> <span class="p">{</span><span class="s1">&#39;execute&#39;</span><span class="p">:</span> <span class="n">mock_db_execute</span><span class="p">,</span> <span class="s1">&#39;fetchall&#39;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">mock_results</span><span class="p">,</span> <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="p">[(</span><span class="s1">&#39;EmployeeID&#39;</span><span class="p">,),</span> <span class="p">(</span><span class="s1">&#39;Department&#39;</span><span class="p">,),</span> <span class="p">(</span><span class="s1">&#39;Salary&#39;</span><span class="p">,)]})()})())</span>
+
+
+    <span class="n">rv</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s1">&#39;/query&#39;</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;query&#39;</span><span class="p">:</span> <span class="s1">&#39;Get Sales department salaries&#39;</span><span class="p">})</span>
+    <span class="k">assert</span> <span class="n">rv</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">200</span>
+    <span class="k">assert</span> <span class="n">rv</span><span class="o">.</span><span class="n">json</span><span class="p">[</span><span class="s1">&#39;result&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">mock_results</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_invalid_query</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">monkeypatch</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mock_process_natural_language</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">monkeypatch</span><span class="o">.</span><span class="n">setattr</span><span class="p">(</span><span class="s2">&quot;aws_bedrock_integration.process_natural_language&quot;</span><span class="p">,</span> <span class="n">mock_process_natural_language</span><span class="p">)</span>
+    <span class="n">rv</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s1">&#39;/query&#39;</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;query&#39;</span><span class="p">:</span> <span class="s1">&#39;Invalid query&#39;</span><span class="p">})</span>
+    <span class="k">assert</span> <span class="n">rv</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">400</span>
+    <span class="k">assert</span> <span class="n">rv</span><span class="o">.</span><span class="n">json</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Invalid query&#39;</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">test_database_error</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">monkeypatch</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mock_db_execute</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">pyodbc</span><span class="o">.</span><span class="n">Error</span><span class="p">(</span><span class="s2">&quot;Database Error&quot;</span><span class="p">)</span>
+    <span class="n">monkeypatch</span><span class="o">.</span><span class="n">setattr</span><span class="p">(</span><span class="s2">&quot;pyodbc.connect&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">type</span><span class="p">(</span><span class="s1">&#39;MockConnection&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nb">object</span><span class="p">,),</span> <span class="p">{</span><span class="s1">&#39;cursor&#39;</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="nb">type</span><span class="p">(</span><span class="s1">&#39;MockCursor&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nb">object</span><span class="p">,),</span> <span class="p">{</span><span class="s1">&#39;execute&#39;</span><span class="p">:</span> <span class="n">mock_db_execute</span><span class="p">})()})())</span>
+    <span class="n">rv</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s1">&#39;/query&#39;</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;query&#39;</span><span class="p">:</span> <span class="s1">&#39;Get some data&#39;</span><span class="p">})</span>
+    <span class="k">assert</span> <span class="n">rv</span><span class="o">.</span><span class="n">status_code</span> <span class="o">==</span> <span class="mi">500</span>
+    <span class="k">assert</span> <span class="s1">&#39;Database error&#39;</span> <span class="ow">in</span> <span class="n">rv</span><span class="o">.</span><span class="n">json</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span>
+</code></pre></div>
+
+<p><strong>2. RESTful API Layer (Python Flask)</strong></p>
+<p>The API layer is integrated directly into the code above using Flask.  The <code>/query</code> endpoint handles POST requests containing the user's natural language query.</p>
+<p><strong>3. Unit Test Cases</strong></p>
+<p>Unit tests are included in the code above using <code>pytest</code>.  These tests mock the AWS Bedrock integration and database interaction to ensure the core logic functions correctly.</p>
+<p><strong>4. Tech Stack Suggestions</strong></p>
+<ul>
+<li><strong>Backend:</strong> Python (Flask), Redis, pyodbc</li>
+<li><strong>Database:</strong> SQL Server (consider alternatives like PostgreSQL for better JSON support)</li>
+<li><strong>NLU:</strong> AWS Bedrock (or similar cloud-based NLU service)</li>
+<li><strong>Testing:</strong> pytest</li>
+</ul>
+<p><strong>5. Tooling and Framework Choices</strong></p>
+<ul>
+<li><strong>Python:</strong>  Chosen for its readability, extensive libraries, and strong community support.</li>
+<li><strong>Flask:</strong> A lightweight and flexible web framework suitable for this application.</li>
+<li><strong>pytest:</strong> A powerful and easy-to-use testing framework.</li>
+<li><strong>Redis:</strong> A fast in-memory data store ideal for caching.</li>
+<li><strong>pyodbc:</strong>  A Python library for connecting to SQL Server.</li>
+</ul>
+<p><strong>6. Setup and Build Instructions</strong></p>
+<ol>
+<li><strong>Install dependencies:</strong> <code>pip install Flask pyodbc pytest redis</code></li>
+<li><strong>Set environment variables:</strong>  <code>SQL_SERVER_CONNECTION_STRING</code>, <code>REDIS_URL</code> (pointing to your Redis instance).</li>
+<li><strong>Run tests:</strong> <code>pytest</code></li>
+<li><strong>Run application:</strong> <code>python your_app_file.py</code> (replace <code>your_app_file.py</code> with the actual filename).</li>
+</ol>
+<p><strong>7. Integration Approach</strong></p>
+<ul>
+<li><strong>AWS Bedrock:</strong> The <code>process_natural_language</code> function (not shown in detail for brevity) handles the interaction with AWS Bedrock's API.  This would involve using the AWS SDK for Python (Boto3) to send the user's query to the model and receive the resulting SQL query.</li>
+<li><strong>SQL Server:</strong> The <code>pyodbc</code> library is used to connect to and execute queries against the SQL Server database.</li>
+<li><strong>Redis:</strong> The <code>redis</code> library handles caching of both queries and results.</li>
+<li><strong>Active Directory:</strong> This would be integrated with the Flask application to authenticate users. (Implementation details omitted for brevity)</li>
+</ul>
+<p><strong>Important Considerations:</strong></p>
+<ul>
+<li><strong>Error Handling:</strong>  Robust error handling is crucial for production applications.  The code includes basic error handling, but additional checks (e.g., for invalid SQL) should be added.</li>
+<li><strong>Security:</strong> Input sanitization is essential to prevent SQL injection vulnerabilities.  Additional security measures (e.g., HTTPS, input validation, output encoding) should be implemented.</li>
+<li><strong>Scalability:</strong> For high-volume usage, consider migrating to a microservice architecture and using asynchronous task processing.</li>
+<li><strong>AWS Bedrock Integration:</strong> Replace the placeholder <code>aws_bedrock_integration</code> module with your actual AWS Bedrock integration.  Ensure proper error handling and rate limiting are implemented.  Consider using a more robust queuing system like SQS to handle high query load.</li>
+</ul>
+<p>This enhanced response provides a more complete and practical implementation, addressing key aspects of building a production-ready backend.  Remember to replace placeholder values with your actual configuration details.</p></div>

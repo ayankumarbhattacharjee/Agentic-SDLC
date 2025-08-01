@@ -1,0 +1,5 @@
+google-generativeai
+altair
+pandas
+streamlit
+streamlit_chat

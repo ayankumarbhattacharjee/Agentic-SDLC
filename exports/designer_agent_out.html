@@ -1,0 +1,149 @@
+ <style>
+    #agent-output {font-family: "Segoe UI", sans-serif; color: #333; }
+
+    #agent-output table {width: 100%; border-collapse: collapse; margin-top: 1rem;}
+    #agent-output th, 
+    #agent-output td {border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; border-left: none; border-right: none; padding: 10px; text-align: left;}
+    #agent-output tr:nth-child(even) {background-color: #f9f9f9;}
+    #agent-output tr:hover {background-color: #e6f7ff;  }
+    #agent-output th {background-color: #111; color: white;}
+
+    #agent-output h1, 
+    #agent-output h2,
+    #agent-output h3 { border-bottom: 2px solid #ddd; padding-bottom: 6px; margin-top: 1.5rem; color: #111; }
+    #agent-output ul { padding-left: 1.5rem; margin-bottom: 1rem; list-style-type: disc;}
+    #agent-output ul li { margin-bottom: 8px;  padding-left: 0.5rem; border-left: 3px;  background-color: #f7faff; border-radius: 4px; transition: background-color 0.3s ease; }
+    #agent-output ul li:hover { background-color: #e6f2ff;}
+    #agent-output ol {padding-left: 1.5rem; margin-bottom: 1rem; list-style-type: decimal; counter-reset: item;}
+    #agent-output ol li {margin-bottom: 8px; padding-left: 0.5rem; position: relative; background-color: #fffdf7; border-left: 3px; border-radius: 4px; transition: background-color 0.3s ease;}
+    #agent-output ol li:hover { background-color: #fff3e0; }
+    #agent-output p { font-size: 1rem;  line-height: 1.7; margin-bottom: 1.2rem; padding: 0.5rem 0.75rem;  border-left: 4px;}
+    #agent-output pre { background-color: #f4f4f4; padding: 10px; border-radius: 6px; overflow-x: auto; }
+    </style> 
+<div id="agent-output"><h1>Designer [AI agent] generated content:</h1>
+<h2>Conversational HR Metrics Chatbot - Design Document</h2>
+<p>This document details the design of a conversational chatbot application for accessing aggregated HR metrics from a SQL Server database, leveraging AWS Bedrock.</p>
+<p><strong>1. High-Level Design</strong></p>
+<p>The system comprises five main components:</p>
+<ul>
+<li>
+<p><strong>Chatbot Interface:</strong>  Handles user interaction, presents results, and manages the conversation flow.  This component will be responsible for receiving natural language queries from the user and forwarding them to the NLU module. It will also receive the results from the SQL Query Executor and present them to the user in a conversational format.</p>
+</li>
+<li>
+<p><strong>Natural Language Understanding (NLU) Module:</strong> Translates user natural language queries into structured SQL queries.  This leverages a pre-trained model from AWS Bedrock.</p>
+</li>
+<li>
+<p><strong>SQL Query Executor:</strong> Executes the generated SQL queries against the SQL Server database.  This component is responsible for ensuring the efficiency and accuracy of the database queries.  It will implement error handling and potentially caching mechanisms to improve performance.</p>
+</li>
+<li>
+<p><strong>Data Cache:</strong> Stores frequently accessed data and query results to improve response time.  This includes both prompt caching (caching frequently asked questions and their corresponding SQL queries) and semantic caching (caching semantic representations of user queries to speed up NLU processing).</p>
+</li>
+<li>
+<p><strong>Security &amp; Access Control Module:</strong>  Handles authentication and authorization using Active Directory integration.  This component ensures only authorized users can access the application based on group membership.</p>
+</li>
+</ul>
+<p><strong>High-Level Data Flow Diagram:</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">[User] --&gt; [Chatbot Interface] --&gt; [NLU Module] --&gt; [SQL Query Executor] --&gt; [SQL Server Database] --&gt; [Data Cache] --&gt; [SQL Query Executor] --&gt; [NLU Module] --&gt; [Chatbot Interface] --&gt; [User]</span>
+<span class="w">                                                                     </span><span class="na">^                                                                        |</span>
+<span class="w">                                                                     </span><span class="na">|---[Security &amp; Access Control Module]---|---------------------------------------|</span>
+</code></pre></div>
+
+<p><strong>2. Low-Level Design</strong></p>
+<p><strong>Modules:</strong></p>
+<ul>
+<li>
+<p><strong>Chatbot Interface (Python):</strong> Uses a framework like Flask or FastAPI for handling HTTP requests and responses.  Manages conversation state, handles user input sanitization, and formats output for presentation.</p>
+</li>
+<li>
+<p><strong>NLU Module (Python):</strong>  Utilizes the AWS Bedrock SDK to interact with the pre-trained NLU model.  Includes error handling for cases where the NLU model fails to generate a valid SQL query.  Could potentially utilize a fallback mechanism (e.g., predefined query mapping) for ambiguous or unsupported queries.</p>
+</li>
+<li>
+<p><strong>SQL Query Executor (Python):</strong> Uses a database connector library (e.g., pyodbc) to interact with the SQL Server database.  Implements caching strategies (e.g., using Redis or Memcached).  Includes robust error handling and logging for database operations.</p>
+</li>
+<li>
+<p><strong>Data Cache (Redis):</strong>  A key-value store for storing frequently accessed data and query results.  The choice of Redis allows for high performance and scalability.</p>
+</li>
+<li>
+<p><strong>Security &amp; Access Control Module (Python):</strong> Uses Active Directory libraries to authenticate users and check group memberships. Integrates with the chatbot interface to enforce authorization rules.</p>
+</li>
+</ul>
+<p><strong>Classes/Interfaces:</strong></p>
+<ul>
+<li><code>ChatbotInterface</code>:  Handles user interaction, manages conversation state.</li>
+<li><code>NLUProcessor</code>:  Abstracts the interaction with the AWS Bedrock NLU model.</li>
+<li><code>SQLExecutor</code>:  Abstracts database interactions, handles caching and error handling.</li>
+<li><code>DataCache</code>:  Provides an interface for caching and retrieving data.</li>
+<li><code>SecurityManager</code>:  Handles authentication and authorization via Active Directory.</li>
+</ul>
+<p><strong>Integration Touchpoints:</strong></p>
+<ul>
+<li>Chatbot Interface &lt;-&gt; NLU Module:  REST API calls.</li>
+<li>NLU Module &lt;-&gt; SQL Query Executor:  Direct method calls.</li>
+<li>SQL Query Executor &lt;-&gt; SQL Server Database:  Database connection.</li>
+<li>SQL Query Executor &lt;-&gt; Data Cache:  API calls.</li>
+<li>Chatbot Interface &lt;-&gt; Security &amp; Access Control Module:  Method calls.</li>
+</ul>
+<p><strong>3. Technical Architecture Description</strong></p>
+<ul>
+<li>
+<p><strong>Deployment Layers:</strong> The application will be deployed on AWS, leveraging AWS Bedrock for the NLU model and potentially other services like Lambda for function execution.  The SQL Server database will reside in a separate AWS managed service like RDS.</p>
+</li>
+<li>
+<p><strong>Communication Paths:</strong>  Internal communication between modules will primarily use direct method calls within a single application instance or REST API calls for microservice architecture.  Communication with external services (AWS Bedrock, Active Directory, SQL Server) will use their respective APIs and SDKs.</p>
+</li>
+<li>
+<p><strong>External Integrations:</strong> AWS Bedrock (NLU model), Active Directory, SQL Server.</p>
+</li>
+</ul>
+<p><strong>4. List of Tools, Technologies, and Frameworks</strong></p>
+<ul>
+<li>Python (Programming Language)</li>
+<li>Flask/FastAPI (Web Framework)</li>
+<li>AWS Bedrock (NLU Model)</li>
+<li>AWS Lambda (optional for serverless functions)</li>
+<li>AWS RDS (SQL Server Database)</li>
+<li>Redis (Caching)</li>
+<li>pyodbc (SQL Server Connector)</li>
+<li>Active Directory Libraries</li>
+</ul>
+<p><strong>5. Assumptions and Constraints</strong></p>
+<ul>
+<li>The HR database schema is well-defined and accessible.</li>
+<li>The pre-trained AWS Bedrock model provides sufficient accuracy for the intended use case.</li>
+<li>Adequate AWS resources are available for deployment and scaling.</li>
+<li>The volume of queries is within the capacity of the selected AWS Bedrock model.</li>
+</ul>
+<p><strong>6. Notes on Future Scalability Considerations</strong></p>
+<ul>
+<li>Microservice architecture:  Decompose the application into independent microservices for better scalability and maintainability.</li>
+<li>Horizontal scaling:  Deploy multiple instances of each microservice to handle increased load.</li>
+<li>Asynchronous processing:  Use message queues (e.g., SQS) to handle asynchronous tasks.</li>
+<li>Database sharding:  Partition the database across multiple instances for improved performance.</li>
+</ul>
+<p><strong>7. Data Quality Considerations</strong></p>
+<ul>
+<li>Data validation:  Implement data validation checks at multiple points in the system to ensure data accuracy.</li>
+<li>Data cleansing:  Regularly clean the HR data to remove inconsistencies and errors.</li>
+<li>Monitoring:  Monitor data quality metrics to identify and address issues proactively.</li>
+</ul>
+<p><strong>8. Data Governance Considerations</strong></p>
+<ul>
+<li>Data access control:  Implement robust access control mechanisms to ensure data privacy and security.</li>
+<li>Data lineage tracking:  Track the origin and transformation of data.</li>
+<li>Data retention policies:  Establish clear policies for data retention and disposal.</li>
+</ul>
+<p><strong>9. Infrastructure Decisions</strong></p>
+<ul>
+<li>AWS Cloud:  All components will be deployed on AWS for scalability and reliability.</li>
+<li>Serverless architecture (optional): Leverage AWS Lambda for serverless functions to reduce operational overhead.</li>
+<li>Containerization (Docker/Kubernetes): Consider containerization for improved portability and deployment flexibility.</li>
+</ul>
+<p><strong>10. Data Security Considerations</strong></p>
+<ul>
+<li>Secure communication:  Use HTTPS for all communication between components and external services.</li>
+<li>Input sanitization:  Sanitize user inputs to prevent SQL injection and other attacks.</li>
+<li>Access control:  Implement strict access control using Active Directory integration.</li>
+<li>Data encryption:  Encrypt sensitive data both in transit and at rest.</li>
+<li>Regular security audits:  Conduct regular security audits to identify and address vulnerabilities.</li>
+</ul>
+<p><strong>(Diagram would be included here.  Due to the limitations of this text-based interface, I cannot create a visual diagram.  However, you can easily create a diagram using tools like draw.io, Lucidchart, or even PowerPoint, based on the descriptions provided in the sections above.)</strong>  The diagram should visually represent the components, their interactions, and the data flow as described in the High-Level Design and Technical Architecture sections.</p></div>

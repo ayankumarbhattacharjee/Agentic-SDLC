@@ -1,0 +1,179 @@
+ <style>
+    #agent-output {font-family: "Segoe UI", sans-serif; color: #333; }
+
+    #agent-output table {width: 100%; border-collapse: collapse; margin-top: 1rem;}
+    #agent-output th, 
+    #agent-output td {border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; border-left: none; border-right: none; padding: 10px; text-align: left;}
+    #agent-output tr:nth-child(even) {background-color: #f9f9f9;}
+    #agent-output tr:hover {background-color: #e6f7ff;  }
+    #agent-output th {background-color: #111; color: white;}
+
+    #agent-output h1, 
+    #agent-output h2,
+    #agent-output h3 { border-bottom: 2px solid #ddd; padding-bottom: 6px; margin-top: 1.5rem; color: #111; }
+    #agent-output ul { padding-left: 1.5rem; margin-bottom: 1rem; list-style-type: disc;}
+    #agent-output ul li { margin-bottom: 8px;  padding-left: 0.5rem; border-left: 3px;  background-color: #f7faff; border-radius: 4px; transition: background-color 0.3s ease; }
+    #agent-output ul li:hover { background-color: #e6f2ff;}
+    #agent-output ol {padding-left: 1.5rem; margin-bottom: 1rem; list-style-type: decimal; counter-reset: item;}
+    #agent-output ol li {margin-bottom: 8px; padding-left: 0.5rem; position: relative; background-color: #fffdf7; border-left: 3px; border-radius: 4px; transition: background-color 0.3s ease;}
+    #agent-output ol li:hover { background-color: #fff3e0; }
+    #agent-output p { font-size: 1rem;  line-height: 1.7; margin-bottom: 1.2rem; padding: 0.5rem 0.75rem;  border-left: 4px;}
+    #agent-output pre { background-color: #f4f4f4; padding: 10px; border-radius: 6px; overflow-x: auto; }
+    </style> 
+<div id="agent-output"><h1>Analyst [AI agent] generated content:</h1>
+<h2>Conversational HR Metrics Chatbot - Requirement Specification Document</h2>
+<p><strong>1. Introduction</strong></p>
+<p>This document outlines the requirements for a conversational chatbot application that allows users to access aggregated HR metrics from a SQL Server database. The solution will leverage AWS Bedrock for its underlying architecture, incorporating features like semantic caching, prompt caching, and history retention.  Access will be controlled via Active Directory group membership.  The primary goal is to provide users with a convenient and efficient way to access relevant HR data while ensuring data privacy and security.</p>
+<p><strong>2. Stakeholder Impact Report</strong></p>
+<table>
+<thead>
+<tr>
+<th>KPI</th>
+<th>Goal</th>
+<th>Workflow Impact</th>
+<th>Risks</th>
+<th>Mitigation Strategy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>User Satisfaction</td>
+<td>Achieve a 90% satisfaction rating (CSAT).</td>
+<td>Streamlined data access, reduced reliance on manual reports.</td>
+<td>Poor query performance, inaccurate results, security breaches.</td>
+<td>Implement robust testing, monitoring, and security measures.</td>
+</tr>
+<tr>
+<td>Query Response Time</td>
+<td>Average response time under 10 seconds.</td>
+<td>Faster decision-making, improved operational efficiency.</td>
+<td>Database bottlenecks, inadequate infrastructure.</td>
+<td>Optimize database queries, scale AWS Bedrock infrastructure.</td>
+</tr>
+<tr>
+<td>Data Accuracy</td>
+<td>Maintain 99.9% data accuracy.</td>
+<td>Improved decision-making based on reliable data.</td>
+<td>Data inconsistencies, errors in the database.</td>
+<td>Implement data validation checks, regular data cleansing.</td>
+</tr>
+<tr>
+<td>Security Incidents</td>
+<td>Zero security incidents related to data breach.</td>
+<td>Enhanced data security and compliance.</td>
+<td>Unauthorized access, vulnerabilities in the application.</td>
+<td>Implement strict access controls, regular security audits.</td>
+</tr>
+<tr>
+<td>AD Group Management Efficiency</td>
+<td>Efficient &amp; timely updates to AD groups.</td>
+<td>Reduced administrative overhead.</td>
+<td>Delays in access provisioning, errors in AD group management.</td>
+<td>Develop a standardized process with clear roles and responsibilities.</td>
+</tr>
+<tr>
+<td>Cost Efficiency</td>
+<td>Stay within the allocated budget.</td>
+<td>Optimize resource utilization and minimize operational costs.</td>
+<td>Unexpected infrastructure costs, inefficient resource utilization.</td>
+<td>Optimize AWS Bedrock configuration, monitor resource usage closely.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>3. Software Requirement Specifications</strong></p>
+<p>This section details the functional and non-functional requirements for the chatbot application.</p>
+<p><strong>3.1 Epics</strong></p>
+<ul>
+<li><strong>Epic 1:</strong> Develop Conversational Interface</li>
+<li><strong>Epic 2:</strong> Integrate with HR Database</li>
+<li><strong>Epic 3:</strong> Implement Caching Mechanisms</li>
+<li><strong>Epic 4:</strong> Secure Access Control</li>
+<li><strong>Epic 5:</strong> Deploy on AWS Bedrock</li>
+</ul>
+<p><strong>3.2 User Stories</strong></p>
+<table>
+<thead>
+<tr>
+<th>Title</th>
+<th>Business Objective</th>
+<th>Functional Requirements</th>
+<th>Non-Functional Requirements</th>
+<th>User Roles &amp; Personas</th>
+<th>Assumptions &amp; Constraints</th>
+<th>Success Criteria</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Access HR Metrics via Chat</td>
+<td>Provide efficient access to aggregated HR data.</td>
+<td>User can initiate a conversation, ask questions about HR metrics, receive relevant data in a conversational format.</td>
+<td>Response time &lt; 10 seconds, high availability, secure communication.</td>
+<td>HR Analysts, Managers, Employees (based on AD group access)</td>
+<td>HR database contains aggregated metrics only; no PII beyond what is needed for context.</td>
+<td>Users can successfully retrieve accurate and relevant HR data via the chatbot.</td>
+</tr>
+<tr>
+<td>View Chat History</td>
+<td>Allow users to review past interactions.</td>
+<td>Chat history is retained for a specified period (e.g., 30 days). Users can access and review past conversations.</td>
+<td>Easy navigation of chat history, secure storage of chat logs.</td>
+<td>HR Analysts, Managers, Employees (based on AD group access)</td>
+<td>Retention period is sufficient to meet business needs.</td>
+<td>Users can easily access and review their past conversations.</td>
+</tr>
+<tr>
+<td>Utilize Semantic &amp; Prompt Caching</td>
+<td>Improve response time and reduce computational cost.</td>
+<td>The system caches semantic representations of user queries and frequently asked prompts.</td>
+<td>Efficient caching mechanism, minimal impact on query latency.</td>
+<td>All users</td>
+<td>Relatively low volume of unique user queries, many users ask similar questions, limited synonym range for common queries.</td>
+<td>Improved response time and reduced system load.</td>
+</tr>
+<tr>
+<td>Secure Access via Active Directory Groups</td>
+<td>Ensure only authorized users can access the application.</td>
+<td>Access is granted based on AD group membership.</td>
+<td>Secure authentication, authorization, and auditing.</td>
+<td>System Administrator, HR Administrator, HR Analysts, Managers, Employees</td>
+<td>AD group membership is regularly updated, and a documented process exists for managing access changes.</td>
+<td>Only authorized users can access the system; all access is properly logged and audited.</td>
+</tr>
+<tr>
+<td>Deploy and Manage on AWS Bedrock</td>
+<td>Leverage AWS Bedrock for scalability and cost-effectiveness.</td>
+<td>The application is deployed and managed on AWS Bedrock.</td>
+<td>Scalability, reliability, cost-effectiveness.</td>
+<td>System Administrator</td>
+<td>Adequate infrastructure resources available on AWS; AWS Bedrock model selection appropriate for query complexity.</td>
+<td>The application is successfully deployed and functioning correctly on AWS Bedrock.</td>
+</tr>
+<tr>
+<td>Report Generation (Future Enhancement)</td>
+<td>Allow users to generate reports from accessed data</td>
+<td>Users can request specific reports based on their queries</td>
+<td>Report generation speed, report format options, data visualization options</td>
+<td>HR Analysts, Managers</td>
+<td>Will require further database design considerations and integration with reporting tools</td>
+<td>Users can successfully generate reports from within the chatbot interface</td>
+</tr>
+</tbody>
+</table>
+<p><strong>4.  Technical Specifications</strong></p>
+<ul>
+<li><strong>Programming Language:</strong> Python (or other suitable language for AWS Bedrock integration)</li>
+<li><strong>Database:</strong> SQL Server</li>
+<li><strong>Cloud Platform:</strong> AWS (Specifically utilizing AWS Bedrock)</li>
+<li><strong>Authentication:</strong> Active Directory Integration</li>
+<li><strong>Caching Mechanism:</strong>  Implementation of both semantic caching and prompt caching strategies.  Specific algorithms will depend on testing and performance needs.</li>
+</ul>
+<p><strong>5.  Future Considerations</strong></p>
+<ul>
+<li><strong>Integration with other HR systems:</strong>  Extend the chatbot's capabilities by integrating with other HR systems (e.g., payroll, benefits).</li>
+<li><strong>Natural Language Understanding (NLU) improvements:</strong> Enhance the chatbot's ability to understand complex and nuanced queries.</li>
+<li><strong>Advanced analytics:</strong> Provide users with more sophisticated data analysis capabilities.</li>
+<li><strong>Multilingual support:</strong> Extend the chatbot's reach by supporting multiple languages.</li>
+</ul>
+<p><strong>6. Conclusion</strong></p>
+<p>This requirement specification document provides a comprehensive overview of the proposed conversational HR metrics chatbot.  By addressing the outlined requirements, the solution will deliver significant value to stakeholders by providing efficient, secure, and compliant access to critical HR data.  Ongoing iterative development and refinement will be crucial for optimizing performance and meeting evolving business needs.</p></div>

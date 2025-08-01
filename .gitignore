@@ -1,0 +1,7 @@
+# Gemini API Key
+keys/
+.gemini_key
+
+# Python virtual environment and cache
+venv/
+__pycache__/
