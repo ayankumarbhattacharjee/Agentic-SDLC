@@ -51,7 +51,9 @@ if "storyline" not in st.session_state:
     st.session_state.storyline = ""
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
-    
+if "editing" not in st.session_state:
+    st.session_state.editing = False
+
 
 st.set_page_config(page_title="🤖 Agentic SDLC Assistant", layout="wide")
 st.title("📽️ RFP Storyline Chatbot")

@@ -189,6 +189,7 @@ When you ask a followup clarification question, put a marker "[C]" at the end so
 For followup questions [C], take cure from the user answer of the original question [N].
 Please refer to the transcript to check marker to ensure that the agent has not asked more than 2 followup clarification questions [C] for a single new relevant question [N].
 Form the conversation like 1 new original question followed by 0-2 followup questions.
+Do not ask more than 3 new [N] questions.
 Based on your evaluation, just send 1 question at a time, or send the string 'I am satified' """
 
     qpDict = {

@@ -2,6 +2,7 @@
 keys/
 .gemini_key
 
-# Python virtual environment and cache
+# Python virtual environment and cache files
 venv/
+.venv/
 __pycache__/
